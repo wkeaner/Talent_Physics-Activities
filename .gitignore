@@ -1,0 +1,22 @@
+# Dependencies
+node_modules
+package-lock.json
+
+# Production
+dist
+build
+
+# Environment
+.env
+.env.local
+
+# Logs
+*.log
+
+# Editor
+.vscode/*
+!.vscode/settings.json
+.DS_Store
+
+# Vercel
+.vercel
