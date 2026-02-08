@@ -2,9 +2,9 @@
 
 > **Misconception-targeted interactive simulations with AI tutoring, driven by physics education research data.**
 
-A web-based platform that generates interactive physics simulations designed to address specific student misconceptions identified in the [SPHERE dataset](https://doi.org/10.1088/1361-6404/ac36f4) (497 Indonesian high school students, Force Concept Inventory). Each simulation creates **cognitive conflict** — the moment a student's prediction clashes with what actually happens — and an AI tutor guides them to reconstruct their understanding.
+A web-based platform that generates interactive physics simulations designed to address specific student misconceptions identified in the [SPHERE dataset]([https://doi.org/10.1088/1361-6404/ac36f4](https://data.mendeley.com/datasets/88d7m2fv7p/2)) (497 Indonesian high school students, Force Concept Inventory). Each simulation creates **cognitive conflict** — the moment a student's prediction clashes with what actually happens — and an AI tutor guides them to reconstruct their understanding.
 
-**Live demo:** [https://talent-physics.vercel.app](https://talent-physics.vercel.app) *(coming soon)*
+**Live demo:** [https://talent-physics-activities.vercel.app/](https://talent-physics-activities.vercel.app/) *(coming soon)*
 
 ---
 
