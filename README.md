@@ -246,28 +246,6 @@ You don't need to write code to use or evaluate this platform:
 
 ---
 
-## Research Context
-
-This platform is part of a PhD research project at the **University of Georgia** investigating:
-
-**RQ1:** Can LLMs generate pedagogically effective physics simulation configs from Q-matrix data?
-
-**RQ2:** Do LLM-generated simulations produce learning gains equivalent to human-designed versions?
-
-**RQ3:** What percentage of SPHERE Q-matrix misconceptions can be automatically covered?
-
-**RQ4:** How do teachers adopt and customize generated simulations?
-
-### Related Publications
-- SPHERE dataset: Saputri, D. F., et al. (2021). *European Journal of Physics Education*
-- Force Concept Inventory: Hestenes, D., Wells, M., & Swackhamer, G. (1992). *The Physics Teacher*
-
-### Target Venues
-- AIED 2026 (AI in Education)
-- EDM 2026 (Educational Data Mining)
-
----
-
 ## How to Add a New Simulation
 
 1. **Create a config JSON** in `src/configs/` following the schema (see `friction-newton1.json` as template)
