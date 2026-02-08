@@ -1,18 +1,9 @@
 /**
- * SimulationPage.jsx
+ * SimulationPage.jsx — SIMPLIFIED
  * 
- * A generic simulation page that reads a config and renders:
- *   - SimulationEngine (Matter.js physics)
- *   - ControlFactory (sliders, buttons, etc.)
- *   - PedagogyManager (POE teaching flow)
- *   - ChatPanel (AI Tutor)
- *   - Real-time data display
- * 
- * This single component replaces the need for separate
- * FrictionSimulation.jsx, ThirdLawSimulation.jsx, etc.
- * 
- * Usage:
- *   <SimulationPage config={frictionConfig} />
+ * Wires SimulationEngine + ControlFactory + PedagogyManager + ChatPanel.
+ * Friction sync is handled inside SimulationEngine.setProperty(),
+ * so this file just passes through control events.
  */
 import { useRef, useState, useCallback } from 'react'
 import SimulationLayout from '../components/Layout/SimulationLayout'
@@ -27,158 +18,147 @@ export default function SimulationPage({ config }) {
   const [physicsState, setPhysicsState] = useState({})
   const [forceCount, setForceCount] = useState(0)
 
-  // AI Tutor - pass config context so the tutor knows which simulation this is
   const { messages, sendMessage, isLoading } = useAITutor(
-    config.pedagogy?.aiTutor?.systemPrompt,
-    config
+    config.pedagogy?.aiTutor?.systemPrompt, config
   )
 
-  // ============================================================
-  // Handle physics state updates from the engine
-  // ============================================================
   const handleStateUpdate = useCallback((state) => {
     setPhysicsState(state)
   }, [])
 
-  // ============================================================
-  // Handle control actions (buttons: applyForce, reset, etc.)
-  // ============================================================
+  // ── Button actions ──
   const handleAction = useCallback((actionType, params, targetId) => {
     if (!engineRef.current) return
-
-    switch (actionType) {
-      case 'applyForce':
-        if (targetId && params?.force) {
-          engineRef.current.applyForce(targetId, params.force)
-          setForceCount(prev => prev + 1)
-        }
-        break
-
-      case 'reset':
-        engineRef.current.reset()
-        setForceCount(0)
-        break
-
-      case 'launchCollision':
-        // For third-law simulation: set velocities of multiple objects
-        if (params?.objectA && params?.objectB) {
-          engineRef.current.launchCollision([
-            { id: params.objectA.id, velocity: params.objectA.velocity },
-            { id: params.objectB.id, velocity: params.objectB.velocity },
-          ])
-        }
-        break
-
-      default:
-        console.warn(`Unknown action: ${actionType}`)
+    if (actionType === 'applyForce' && targetId && params?.force) {
+      engineRef.current.applyForce(targetId, params.force)
+      setForceCount(prev => prev + 1)
+    } else if (actionType === 'reset') {
+      engineRef.current.reset()
+      setForceCount(0)
+    } else if (actionType === 'launchCollision' && params?.objectA && params?.objectB) {
+      engineRef.current.launchCollision([
+        { id: params.objectA.id, velocity: params.objectA.velocity },
+        { id: params.objectB.id, velocity: params.objectB.velocity },
+      ])
     }
   }, [])
 
-  // ============================================================
-  // Handle property changes (sliders, dropdowns)
-  // ============================================================
+  // ── Slider/dropdown property changes ──
+  // The engine's setProperty handles friction sync internally
   const handlePropertyChange = useCallback((targetId, property, value) => {
-    if (!engineRef.current || !targetId) return
-    engineRef.current.setProperty(targetId, property, value)
+    if (engineRef.current && targetId) {
+      engineRef.current.setProperty(targetId, property, value)
+    }
   }, [])
 
-  // ============================================================
-  // Handle prediction selection from PedagogyManager
-  // ============================================================
-  const handlePrediction = useCallback((choice) => {
-    // Send prediction to AI tutor automatically
-    const message = choice.isCorrect
-      ? `I predicted: "${choice.label}" — I think this is correct because...`
-      : `I predicted: "${choice.label}"`
-
-    // Optional: auto-send to AI tutor
-    // sendMessage(message)
-  }, [])
-
-  // ============================================================
-  // Render
-  // ============================================================
-
-  // Find the first dynamic object for the data display
+  // ── Render ──
   const dynamicIds = (config.physics?.dynamics || []).map(d => d.id)
-  const primaryId = dynamicIds[0]
-  const primaryState = primaryId ? physicsState[primaryId] : null
+  const canvasW = config.physics?.world?.bounds?.width || 800
 
   return (
     <SimulationLayout
       title={config.scenario?.title || 'Physics Simulation'}
-      description={config.scenario?.narrative || config.education?.concept || ''}
+      description={config.scenario?.narrative || ''}
       simulation={
         <div>
-          {/* Physics Canvas */}
           <SimulationEngine
             ref={engineRef}
             config={config}
             onStateUpdate={handleStateUpdate}
           />
 
-          {/* Real-Time Data Panel */}
+          {/* ── Real-Time Data Panel ── */}
           <div style={{
-            background: '#e8f5e9',
-            padding: '15px',
-            borderRadius: '8px',
-            marginTop: '16px',
+            background: '#e8f5e9', padding: '15px',
+            borderRadius: '8px', marginTop: '16px',
           }}>
-            <h3 style={{
-              fontSize: '14px',
-              color: '#2e7d32',
-              marginBottom: '10px',
-              fontWeight: '600'
-            }}>
+            <h3 style={{ fontSize: '14px', color: '#2e7d32', marginBottom: '10px', fontWeight: '600' }}>
               📊 Real-Time Data
             </h3>
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-              gap: '8px',
-              fontSize: '13px',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+              gap: '8px', fontSize: '13px',
             }}>
-              {/* Show data for each dynamic object */}
               {dynamicIds.map(id => {
-                const state = physicsState[id]
-                if (!state) return null
-                const objConfig = config.physics.dynamics.find(d => d.id === id)
+                const s = physicsState[id]
+                if (!s) return null
+                const obj = config.physics.dynamics.find(d => d.id === id)
+                const speed = s.speed || 0
+                const moving = speed > 0.05
+                const offScreen = s.position && (s.position.x > canvasW + 50 || s.position.x < -50)
+                const frictionless = (s.effectiveFriction ?? s.friction) < 0.01
+
                 return (
                   <div key={id} style={{
-                    background: 'rgba(255,255,255,0.7)',
-                    padding: '8px 12px',
-                    borderRadius: '6px',
+                    background: offScreen && moving ? 'rgba(21,101,192,0.1)' : 'rgba(255,255,255,0.7)',
+                    padding: '10px 12px', borderRadius: '6px',
+                    border: offScreen && moving ? '2px solid #1565c0' : '2px solid transparent',
                   }}>
                     <div style={{ fontWeight: '600', color: '#2e7d32', marginBottom: '4px', fontSize: '12px' }}>
-                      {objConfig?.label || id}
+                      {obj?.label || id}
+                      {offScreen && moving && (
+                        <span style={{ color: '#1565c0', fontWeight: '700', marginLeft: '6px' }}>
+                          — still moving! →
+                        </span>
+                      )}
                     </div>
-                    <div>
+
+                    <div style={{ marginBottom: '3px' }}>
                       <span style={{ color: '#555' }}>Speed: </span>
-                      <strong style={{ fontFamily: 'monospace', color: '#2e7d32' }}>
-                        {state.speed?.toFixed(2) || '0.00'} m/s
+                      <strong style={{
+                        fontFamily: 'monospace', fontSize: offScreen && moving ? '18px' : '15px',
+                        color: moving ? (frictionless ? '#1565c0' : '#2e7d32') : '#999',
+                      }}>
+                        {speed.toFixed(2)} m/s
                       </strong>
+                      {moving && frictionless && !offScreen && (
+                        <span style={{ fontSize: '11px', color: '#1565c0', marginLeft: '6px' }}>
+                          ← constant!
+                        </span>
+                      )}
                     </div>
+
+                    {offScreen && moving && (
+                      <div style={{ fontSize: '12px', color: '#1565c0', fontWeight: '600', marginTop: '2px' }}>
+                        🎯 Box is off-screen but speed is constant — Newton's First Law!
+                      </div>
+                    )}
+
                     <div>
                       <span style={{ color: '#555' }}>Friction: </span>
+                      <strong style={{
+                        fontFamily: 'monospace',
+                        color: frictionless ? '#1565c0' : '#2e7d32',
+                      }}>
+                        {(s.effectiveFriction ?? s.friction)?.toFixed(3)}
+                      </strong>
+                      {frictionless && (
+                        <span style={{ fontSize: '11px', color: '#1565c0', marginLeft: '4px' }}>
+                          (frictionless!)
+                        </span>
+                      )}
+                    </div>
+
+                    <div>
+                      <span style={{ color: '#555' }}>Air drag: </span>
                       <strong style={{ fontFamily: 'monospace', color: '#2e7d32' }}>
-                        {state.friction?.toFixed(2) || '—'}
+                        {s.frictionAir?.toFixed(4)}
                       </strong>
                     </div>
                   </div>
                 )
               })}
 
-              {/* Force count */}
               <div style={{
                 background: 'rgba(255,255,255,0.7)',
-                padding: '8px 12px',
-                borderRadius: '6px',
+                padding: '10px 12px', borderRadius: '6px',
               }}>
                 <div style={{ fontWeight: '600', color: '#2e7d32', marginBottom: '4px', fontSize: '12px' }}>
                   Interaction
                 </div>
                 <div>
-                  <span style={{ color: '#555' }}>Forces: </span>
+                  <span style={{ color: '#555' }}>Pushes: </span>
                   <strong style={{ fontFamily: 'monospace', color: '#2e7d32' }}>
                     {forceCount}
                   </strong>
@@ -190,17 +170,13 @@ export default function SimulationPage({ config }) {
       }
       controls={
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          {/* Dynamic Controls from Config */}
           <ControlFactory
             controls={config.controls}
             onPropertyChange={handlePropertyChange}
             onAction={handleAction}
           />
-
-          {/* Pedagogy Guide (POE Flow) */}
           <PedagogyManager
             pedagogy={config.pedagogy}
-            onPredictionSelect={handlePrediction}
           />
         </div>
       }
