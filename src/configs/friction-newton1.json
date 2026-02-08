@@ -1,0 +1,213 @@
+{
+  "id": "friction-newton1",
+  "version": "1.0.0",
+  "generatedBy": "human",
+  "createdAt": "2026-02-07T00:00:00Z",
+
+  "education": {
+    "concept": "Newton's First Law (Inertia)",
+    "misconception": "Objects require continuous force to maintain velocity",
+    "correctUnderstanding": "An object in motion stays in motion at constant velocity unless acted upon by a net external force (like friction or air resistance)",
+    "fciItem": "FCI Item 10",
+    "spherePrevalence": 0.453,
+    "gradeLevel": "high",
+    "prerequisites": ["force", "velocity", "friction"]
+  },
+
+  "scenario": {
+    "title": "Friction & Motion Explorer",
+    "narrative": "Explore how friction affects the motion of a box sliding across different surfaces. Can an object keep moving without any force pushing it?",
+    "cognitiveConflict": "Students expect the box to stop immediately when force is removed. In reality, on low-friction surfaces, it continues moving for a long time.",
+    "realWorldConnection": "Think about sliding a hockey puck on ice versus pushing a heavy box across carpet."
+  },
+
+  "physics": {
+    "world": {
+      "gravity": { "x": 0, "y": 1 },
+      "gravityScale": 0.001,
+      "bounds": { "width": 800, "height": 400 }
+    },
+    "statics": [
+      {
+        "id": "ground",
+        "type": "rectangle",
+        "label": "Surface",
+        "position": { "x": 400, "y": 390 },
+        "dimensions": { "width": 800, "height": 40 },
+        "appearance": {
+          "fillColor": "#8B7355",
+          "strokeColor": "#6B5335",
+          "opacity": 1
+        },
+        "physics": {
+          "friction": 0.5,
+          "restitution": 0.1
+        }
+      },
+      {
+        "id": "left-wall",
+        "type": "rectangle",
+        "label": "",
+        "position": { "x": -10, "y": 200 },
+        "dimensions": { "width": 20, "height": 400 },
+        "appearance": { "fillColor": "#333", "strokeColor": "#333", "opacity": 0 },
+        "physics": { "friction": 0, "restitution": 0.5 }
+      },
+      {
+        "id": "right-wall",
+        "type": "rectangle",
+        "label": "",
+        "position": { "x": 810, "y": 200 },
+        "dimensions": { "width": 20, "height": 400 },
+        "appearance": { "fillColor": "#333", "strokeColor": "#333", "opacity": 0 },
+        "physics": { "friction": 0, "restitution": 0.5 }
+      }
+    ],
+    "dynamics": [
+      {
+        "id": "box",
+        "type": "rectangle",
+        "label": "Box",
+        "position": { "x": 150, "y": 340 },
+        "dimensions": { "width": 50, "height": 50 },
+        "appearance": {
+          "fillColor": "#e74c3c",
+          "strokeColor": "#c0392b",
+          "opacity": 1,
+          "showLabel": true
+        },
+        "physics": {
+          "mass": 5,
+          "friction": 0.5,
+          "frictionAir": 0.01,
+          "restitution": 0.3,
+          "inertia": "Infinity"
+        },
+        "initialVelocity": { "x": 0, "y": 0 },
+        "showVectors": {
+          "velocity": true,
+          "force": true
+        }
+      }
+    ]
+  },
+
+  "controls": [
+    {
+      "id": "friction-slider",
+      "type": "slider",
+      "label": "Surface Friction",
+      "target": "ground",
+      "property": "friction",
+      "range": { "min": 0, "max": 1, "step": 0.01 },
+      "defaultValue": 0.5,
+      "unit": null
+    },
+    {
+      "id": "mass-slider",
+      "type": "slider",
+      "label": "Box Mass",
+      "target": "box",
+      "property": "mass",
+      "range": { "min": 1, "max": 20, "step": 0.5 },
+      "defaultValue": 5,
+      "unit": "kg"
+    },
+    {
+      "id": "apply-force",
+      "type": "button",
+      "label": "Apply Force →",
+      "target": "box",
+      "action": "applyForce",
+      "actionParams": { "force": { "x": 0.05, "y": 0 } }
+    },
+    {
+      "id": "reset",
+      "type": "button",
+      "label": "Reset",
+      "target": null,
+      "action": "reset",
+      "actionParams": null
+    },
+    {
+      "id": "surface-preset",
+      "type": "dropdown",
+      "label": "Surface Type",
+      "target": "ground",
+      "property": "friction",
+      "options": [
+        { "label": "🧊 Ice (very low friction)", "value": 0.02 },
+        { "label": "🪵 Wood Floor", "value": 0.3 },
+        { "label": "🧱 Rough Concrete", "value": 0.7 },
+        { "label": "🏖️ Sand", "value": 0.95 }
+      ],
+      "defaultValue": 0.3
+    },
+    {
+      "id": "toggle-vectors",
+      "type": "toggle",
+      "label": "Show Force Vectors",
+      "target": "box",
+      "toggleProperty": "showVectors.velocity"
+    }
+  ],
+
+  "pedagogy": {
+    "strategy": "cognitive_conflict",
+    "predict": {
+      "prompt": "Set the surface to 'Ice' (very low friction). If you push the box and then stop pushing, what do you think will happen?",
+      "choices": [
+        { "label": "The box will stop immediately", "isCorrect": false, "misconception": "Force is required for motion" },
+        { "label": "The box will slow down and stop quickly", "isCorrect": false, "misconception": "Partial understanding" },
+        { "label": "The box will keep sliding for a very long time", "isCorrect": true, "misconception": null },
+        { "label": "The box will speed up on its own", "isCorrect": false, "misconception": "Confused about inertia" }
+      ],
+      "encourageExplanation": true
+    },
+    "observe": {
+      "instructions": "1. Set surface to 'Ice'\n2. Click 'Apply Force →' to push the box\n3. Watch what happens after you stop clicking\n4. Now try 'Rough Concrete' and compare",
+      "focusPoints": [
+        "How long does the box keep moving on ice after force stops?",
+        "How does the speed change over time?",
+        "What's different between ice and concrete?"
+      ],
+      "keyMoment": "The moment you stop applying force — does the box stop? On ice, it barely slows down!"
+    },
+    "explain": {
+      "prompt": "Compare what happened on ice vs. concrete. Why does the box behave differently? What force is actually stopping it?",
+      "scaffoldingQuestions": [
+        "If there were zero friction, would the box ever stop?",
+        "What is friction actually doing to the box's motion?",
+        "Newton's First Law says an object in motion stays in motion unless... what?"
+      ],
+      "correctExplanation": "The box doesn't need force to keep moving — it needs force to STOP. On ice, friction is very small, so the box keeps its velocity for a long time. On concrete, friction is large, so it slows down quickly. This is Newton's First Law.",
+      "commonMistakes": [
+        "Thinking the box 'runs out of force'",
+        "Confusing friction with the push force",
+        "Thinking heavier objects always stop faster"
+      ]
+    },
+    "extend": {
+      "challenge": "Can you find a friction value where the box slides exactly halfway across the surface?",
+      "transferQuestion": "A spacecraft in deep space fires its engines briefly then turns them off. What happens to its speed?"
+    },
+    "aiTutor": {
+      "enabled": true,
+      "systemPrompt": "You are a physics tutor helping a student understand Newton's First Law through a friction simulation. The student may hold the misconception that objects need continuous force to keep moving. Guide them through cognitive conflict. Use Socratic questioning. Never just give the answer.",
+      "suggestedResponses": {
+        "ifCorrectPrediction": "Great prediction! Let's test it — try the simulation and see if reality matches.",
+        "ifIncorrectPrediction": "Interesting prediction! Let's test it. Set the surface to 'Ice' and apply a force. Watch carefully what happens when you stop pushing.",
+        "ifStuck": "Let's think step by step. When you stop pushing, is there still a force acting on the box? What is that force?"
+      }
+    }
+  },
+
+  "dataCollection": {
+    "trackInteractions": true,
+    "trackTime": true,
+    "trackPredictions": true,
+    "trackConversation": true,
+    "preAssessment": "FCI Item 10",
+    "postAssessment": "FCI Item 10"
+  }
+}

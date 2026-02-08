@@ -1,3 +1,4 @@
+//FrictionSimulation.jsx
 import { useEffect, useRef, useState } from 'react'
 import Matter from 'matter-js'
 import SimulationLayout from '../../components/Layout/SimulationLayout'
@@ -9,11 +10,11 @@ export default function FrictionSimulation() {
   const canvasRef = useRef(null)
   const engineRef = useRef(null)
   const boxRef = useRef(null)
-  
+
   const [friction, setFriction] = useState(0.5)
   const [velocity, setVelocity] = useState(0)
   const [forceCount, setForceCount] = useState(0)
-  
+
   const { messages, sendMessage, isLoading } = useAITutor()
 
   // Initialize Matter.js
@@ -90,7 +91,7 @@ export default function FrictionSimulation() {
     if (engineRef.current && boxRef.current) {
       const { World, Bodies } = Matter
       World.remove(engineRef.current.world, boxRef.current)
-      
+
       const newBox = Bodies.rectangle(150, 350, 80, 80, {
         friction: friction,
         restitution: 0.1,
@@ -100,7 +101,7 @@ export default function FrictionSimulation() {
           lineWidth: 3
         }
       })
-      
+
       World.add(engineRef.current.world, newBox)
       boxRef.current = newBox
       setForceCount(0)
@@ -120,7 +121,7 @@ export default function FrictionSimulation() {
             boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
             display: 'block'
           }} />
-          
+
           <div style={{
             background: '#e8f5e9',
             padding: '15px',
